@@ -26,24 +26,28 @@ Interview and academic evaluation
 📂 Repository Structure
 Communication-Protocols/
 
-│
 ├── AXI4-Lite-Protocol/
+
 │   └── README.md
 │
 
 ├── Advanced-Peripheral-Bus-Protocol/
+
 │   └── README.md
 │
 
 ├── Inter-Integrated-Communication-Protocol/
+
 │   └── README.md
 │
 
 ├── Serial-Peripheral-Interface-Protocol/
+
 │   └── README.md
 │
 
 ├── UART-Protocol/
+
 │   └── README.md
 │
 
