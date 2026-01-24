@@ -66,6 +66,7 @@ Waveform verification
 Dedicated README
 
 🧠 Protocols Implemented
+
 1️⃣ AXI4-Lite Protocol
 
 Category: Memory-Mapped On-Chip Bus
@@ -81,6 +82,7 @@ Address, data, and response channels
 Suitable for register access in SoCs
 
 📁 Folder: AXI4-Lite-Protocol/
+
 
 2️⃣ AMBA Advanced Peripheral Bus (APB)
 
@@ -98,6 +100,7 @@ Extensive protocol verification
 
 📁 Folder: Advanced-Peripheral-Bus-Protocol/
 
+
 3️⃣ I²C (Inter-Integrated Communication)
 
 Category: Serial, Multi-Drop Bus
@@ -113,6 +116,7 @@ ACK / NACK handling
 Single-byte read & write support
 
 📁 Folder: Inter-Integrated-Communication-Protocol/
+
 
 4️⃣ SPI (Serial Peripheral Interface)
 
@@ -130,6 +134,7 @@ Continuous multi-frame transfers
 
 📁 Folder: Serial-Peripheral-Interface-Protocol/
 
+
 5️⃣ UART (Universal Asynchronous Receiver/Transmitter)
 
 Category: Asynchronous Serial Communication
@@ -145,6 +150,7 @@ TX & RX FSMs
 Loopback-based verification
 
 📁 Folder: UART-Protocol/
+
 
 ⚙️ Design Philosophy
 
@@ -163,6 +169,7 @@ Readable, modular RTL
 Simulation-first verification
 
 Waveform-proven correctness
+
 
 🧪 Verification Methodology
 
@@ -186,6 +193,7 @@ FSM sequencing
 
 Protocol rule enforcement
 
+
 🛠 Tools & Environment
 
 Verilog HDL
@@ -197,6 +205,7 @@ GTKWave / EPWave
 EDA Playground
 
 Compatible with ModelSim / Questa / Vivado Simulator
+
 
 🎯 Intended Audience
 
@@ -212,6 +221,7 @@ Academic lab submissions
 
 Portfolio demonstrations
 
+
 📌 How to Use This Repository
 
 Clone the repository:
@@ -225,6 +235,7 @@ cd UART-Protocol
 
 
 Follow the README inside that folder to run simulations.
+
 
 🚧 Future Extensions
 
@@ -241,6 +252,7 @@ UART with FIFO & parity
 Assertion-based verification (SVA)
 
 UVM-based protocol agents
+
 
 👤 Author
 
