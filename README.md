@@ -1,4 +1,5 @@
 📡 Communication Protocols – RTL Implementations (Verilog HDL)
+
 📌 Overview
 
 This repository contains clean, protocol-accurate RTL implementations of commonly used digital communication and on-chip bus protocols, written in Verilog HDL and verified using simulation-driven testbenches.
