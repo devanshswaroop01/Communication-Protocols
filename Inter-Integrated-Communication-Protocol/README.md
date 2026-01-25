@@ -1,253 +1,241 @@
+# 📘 I²C Master Controller (RTL Implementation)
 
-📘 I²C Master Controller (RTL Implementation)
-1️⃣ Project Title
+A **clean, FSM-based I²C Master controller** implemented in **Verilog HDL**, supporting single-byte read and write transactions with accurate **open-drain SDA/SCL bus modeling**. The project includes a deterministic behavioral I²C slave for protocol-correct simulation and verification.
 
-I²C Master Controller – RTL Design & Verification (Verilog HDL)
+---
 
-2️⃣ Short Description (TL;DR)
+## 🔖 Overview (TL;DR)
 
-A clean, FSM-based I²C Master controller implemented in Verilog HDL, supporting single-byte read and write transactions using a fully open-drain SDA/SCL bus model.
-The project includes a deterministic behavioral I²C slave testbench for protocol-accurate simulation and verification.
+This project implements a **single-master I²C controller** operating in **Standard Mode (100 kHz)**. The design strictly follows I²C timing rules and demonstrates correct handling of:
 
-3️⃣ Protocol Overview
+* START and STOP conditions
+* Address + R/W transmission
+* ACK / NACK handshaking
+* Open-drain bus behavior
 
-I²C (Inter-Integrated Circuit) is a synchronous, serial, multi-master, multi-slave communication protocol using:
+It is intended for **RTL learning, labs, and VLSI/SoC interviews**, not for full-featured production use.
 
-SDA – Serial Data (open-drain)
+---
 
-SCL – Serial Clock (open-drain)
+## 🧠 I²C Protocol Overview
 
-Key Protocol Characteristics:
+I²C (Inter-Integrated Circuit) is a **synchronous, serial, multi-master, multi-slave** communication protocol using two open-drain signals:
 
-7-bit addressing + 1 R/W bit
+* **SDA** – Serial Data
+* **SCL** – Serial Clock
 
-START and STOP conditions
+### Key Protocol Characteristics
 
-ACK/NACK handshaking
+* 7-bit slave addressing + 1 R/W bit
+* START and STOP conditions
+* ACK / NACK handshaking
+* Data valid when **SCL is HIGH**
+* Data changes only when **SCL is LOW**
 
-Data valid when SCL is HIGH
+> This project implements a **single-master I²C controller in Standard Mode (100 kHz)**.
 
-Data changes only when SCL is LOW
+---
 
-This project implements a single-master I²C controller operating in Standard Mode (100 kHz).
+## 🎯 Project Scope
 
-4️⃣ Project Scope
-Included:
+### ✔ Included
 
-I²C Master RTL
+* I²C Master RTL
+* Address + R/W transmission
+* Single-byte write transaction
+* Single-byte read transaction
+* START, ACK, NACK, and STOP handling
+* Open-drain SDA/SCL modeling
+* Protocol-accurate verification testbench
 
-Address + R/W transmission
+### ❌ Not Included
 
-Single-byte write
+* Multi-byte burst transfers
+* Clock stretching
+* Multi-master arbitration
+* Repeated START conditions
 
-Single-byte read
+---
 
-START, ACK, NACK, STOP handling
+## ✨ Features
 
-Open-drain bus modeling
+* FSM-based I²C protocol controller
+* Parameterized system and I²C clock frequencies
+* Accurate open-drain SDA/SCL modeling
+* Single-byte READ and WRITE support
+* Clean START and STOP generation
+* Deterministic slave model for verification
+* Reset-safe and transaction-safe behavior
+* Readable, modular RTL structure
 
-Protocol-accurate testbench
+---
 
-Not Included:
+## 🏗️ Architecture Overview
 
-Multi-byte burst transfers
+The controller is composed of three major blocks:
 
-Clock stretching
+1. **Clock Divider**
+2. **Open-Drain I²C Bus Interface**
+3. **FSM-Controlled Protocol Engine**
 
-Multi-master arbitration
+The system clock is divided to generate an I²C-compliant SCL, while the FSM sequences SDA behavior according to strict I²C timing rules.
 
-Repeated START conditions
+---
 
-5️⃣ Features
+## 🧩 Block Descriptions
 
-✔ FSM-based I²C control logic
+### 🔹 Clock Divider
 
-✔ Parameterized clock frequency
+* Converts `SYS_CLK_HZ` to desired `I2C_CLK_HZ`
+* Generates internal SCL toggle timing
+* Ensures symmetric HIGH and LOW phases
 
-✔ Open-drain SDA/SCL modeling
+### 🔹 Open-Drain Interface
 
-✔ Single-byte READ and WRITE support
+* SDA and SCL are driven **LOW only**
+* Lines are released to HIGH via pull-ups
+* Accurately models real I²C electrical behavior
 
-✔ Clean START / STOP generation
+### 🔹 Protocol FSM
 
-✔ Deterministic slave model for verification
+* Controls SDA output enable
+* Tracks bit index and transaction phase
+* Handles ACK/NACK sampling and generation
 
-✔ Reset-safe and transaction-safe design
+---
 
-✔ Readable, modular RTL style
+## 🔄 Finite State Machine (FSM)
 
-6️⃣ Architecture Overview
+### FSM States
 
-The design consists of three major blocks:
+| State       | Description                  |
+| ----------- | ---------------------------- |
+| IDLE        | Wait for transaction request |
+| START       | Generate START condition     |
+| SEND_ADDR   | Send slave address + R/W bit |
+| ADDR_ACK    | Sample slave ACK/NACK        |
+| SEND_DATA   | Send write data byte         |
+| DATA_ACK    | Sample data ACK              |
+| READ_DATA   | Receive data byte from slave |
+| MASTER_NACK | Master sends NACK after read |
+| STOP        | Generate STOP condition      |
+| DONE        | Transaction completion pulse |
 
-Clock Divider
+### FSM Timing Rules
 
-I²C Bus Interface (Open-Drain)
+* SDA changes only when **SCL is LOW**
+* SDA sampled only when **SCL is HIGH**
 
-FSM-Controlled Protocol Engine
+---
 
-The controller converts a system clock into an I²C-compliant SCL, while the FSM sequences SDA behavior according to protocol timing rules.
+## 🔌 Interface Signals
 
-7️⃣ Block Descriptions
-🔹 Clock Divider
+### Inputs
 
-Converts SYS_CLK_HZ to desired I2C_CLK_HZ
+| Signal     | Width | Description          |
+| ---------- | ----- | -------------------- |
+| clk        | 1     | System clock         |
+| rst        | 1     | Asynchronous reset   |
+| start      | 1     | Start transaction    |
+| rw         | 1     | Read (1) / Write (0) |
+| slave_addr | 7     | I²C slave address    |
+| wdata      | 8     | Write data           |
 
-Generates internal SCL toggle request
+### Outputs
 
-Ensures symmetric HIGH and LOW phases
+| Signal | Width | Description                |
+| ------ | ----- | -------------------------- |
+| rdata  | 8     | Read data                  |
+| busy   | 1     | Transaction in progress    |
+| done   | 1     | One-cycle completion pulse |
 
-🔹 Open-Drain Interface
+### Bidirectional
 
-SDA and SCL driven LOW only
+| Signal | Description               |
+| ------ | ------------------------- |
+| sda    | Serial Data (open-drain)  |
+| scl    | Serial Clock (open-drain) |
 
-Released to HIGH via pull-ups
+---
 
-Accurately models real I²C electrical behavior
+## ⚙️ Parameters & Configuration
 
-🔹 Protocol FSM
+| Parameter  | Description                 |
+| ---------- | --------------------------- |
+| SYS_CLK_HZ | System clock frequency      |
+| I2C_CLK_HZ | Desired I²C clock frequency |
 
-Controls SDA output enable
+### Example Configuration
 
-Tracks bit position and transaction state
-
-Handles ACK/NACK sampling and generation
-
-8️⃣ Finite State Machine (FSM)
-FSM States:
-
-IDLE – Wait for transaction start
-
-START – Generate START condition
-
-SEND_ADDR – Send address + R/W bit
-
-ADDR_ACK – Sample slave ACK/NACK
-
-SEND_DATA – Send write data byte
-
-DATA_ACK – Sample data ACK
-
-READ_DATA – Receive data from slave
-
-MASTER_NACK – Master NACK after read
-
-STOP – Generate STOP condition
-
-DONE – Transaction completion pulse
-
-The FSM strictly follows I²C timing rules:
-
-SDA changes only when SCL is LOW
-
-SDA sampled only when SCL is HIGH
-
-9️⃣ Interface Signals
-Inputs
-Signal	Width	Description
-clk	1	System clock
-rst	1	Asynchronous reset
-start	1	Start transaction
-rw	1	Read (1) / Write (0)
-slave_addr	7	I²C slave address
-wdata	8	Write data
-Outputs
-Signal	Width	Description
-rdata	8	Read data
-busy	1	Transaction in progress
-done	1	One-cycle completion pulse
-Bidirectional
-Signal	Description
-sda	Serial Data (open-drain)
-scl	Serial Clock (open-drain)
-🔟 Parameters & Configurability
-Parameter	Description
-SYS_CLK_HZ	System clock frequency
-I2C_CLK_HZ	Desired I²C clock frequency
-
-Example:
-
+```
 .SYS_CLK_HZ(1_000_000),
 .I2C_CLK_HZ(100_000)
+```
 
-1️⃣1️⃣ Transaction / Operation Flow
-Write Transaction
+---
 
-START condition
+## 🔁 Transaction Flow
 
-Send address + WRITE bit
+### Write Transaction
 
-Sample ACK
+1. Generate START condition
+2. Send slave address + WRITE bit
+3. Sample ACK from slave
+4. Send data byte
+5. Sample ACK
+6. Generate STOP condition
 
-Send data byte
+### Read Transaction
 
-Sample ACK
+1. Generate START condition
+2. Send slave address + READ bit
+3. Sample ACK from slave
+4. Receive data byte
+5. Master sends NACK
+6. Generate STOP condition
 
-STOP condition
+---
 
-Read Transaction
+## ⏱️ Timing & Clocking Details
 
-START condition
+* SCL derived from system clock using divider
+* SDA driven only during SCL LOW phase
+* SDA sampled during SCL HIGH phase
+* START and STOP generated while SCL is HIGH
+* Fully compliant with I²C Standard Mode timing
 
-Send address + READ bit
+---
 
-Sample ACK
+## 🧪 Simulation & Verification
 
-Read data byte
+Verification uses a **protocol-aware behavioral slave model**:
 
-Master sends NACK
+* Accurate ACK/NACK handling
+* Edge-aligned data sampling
+* Reset and error scenario testing
 
-STOP condition
+### Testbench Coverage
 
-1️⃣2️⃣ Timing & Clocking Details
+* Single-byte write
+* Single-byte read
+* Reset during transaction
+* Slave NACK handling
 
-SCL derived from system clock via divider
+---
 
-SDA driven only during SCL LOW
+## 📊 Expected Simulation Observations
 
-SDA sampled during SCL HIGH
+* Correct START and STOP timing
+* SDA stable during SCL HIGH
+* Proper ACK cycles
+* Correct read data capture
+* `done` asserted for one cycle after STOP
 
-START and STOP generated while SCL HIGH
+---
 
-Fully compliant with I²C Standard Mode timing
+## 🚀 Quick Start
 
-1️⃣3️⃣ Simulation & Verification
-
-Verification is performed using:
-
-Behavioral slave model
-
-Protocol-accurate ACK/NACK handling
-
-Edge-aligned data sampling
-
-Reset and error scenarios
-
-Testbench Covers:
-
-Single-byte write
-
-Single-byte read
-
-Reset mid-transaction
-
-Slave NACK handling
-
-1️⃣4️⃣ Example Simulation Results
-
-Expected observations in waveform:
-
-Correct START and STOP timing
-
-SDA stable during SCL HIGH
-
-Proper ACK cycles
-
-Correct read data captured
-
-done asserted for one cycle after STOP
-
-1️⃣5️⃣ How to Run / Quick Start
+```
 # Compile
 iverilog -o iic_sim iic_master.v iic_master_tb.v
 
@@ -256,47 +244,52 @@ vvp iic_sim
 
 # View waveform
 gtkwave iic_master_final_tb.vcd
+```
 
-1️⃣6️⃣ Tools Used
+---
 
-Verilog HDL
+## 🛠️ Tools Used
 
-Icarus Verilog (iverilog)
+* Verilog HDL
+* Icarus Verilog (iverilog)
+* GTKWave
+* ModelSim / Vivado Simulator (optional)
 
-GTKWave
+---
 
-Any standard RTL simulator (ModelSim, Vivado, etc.)
+## 📁 Directory Structure
 
-1️⃣7️⃣ Directory Structure
+```
 ├── iic_master.v        # I²C Master RTL
 ├── iic_master_tb.v     # Testbench with slave model
 ├── README.md           # Project documentation
 ├── iic_master.vcd      # Simulation waveform (generated)
+```
 
-1️⃣8️⃣ Limitations
+---
 
-Single-byte transactions only
+## ⚠️ Limitations
 
-No clock stretching support
+* Single-byte transactions only
+* No clock stretching support
+* No repeated START conditions
+* No multi-master arbitration
+* No noise or glitch filtering
 
-No repeated START
+---
 
-No multi-master arbitration
+## 🔮 Future Enhancements
 
-No noise/glitch filtering
+* Multi-byte burst read/write
+* Repeated START support
+* Clock stretching detection
+* Arbitration loss handling
+* APB / AXI-Lite wrapper
+* FPGA synthesis and timing constraints
+* Assertion-based verification (SVA)
 
-1️⃣9️⃣ Future Enhancements
+---
 
-Multi-byte burst read/write
-
-Repeated START support
-
-Clock stretching detection
-
-Arbitration loss handling
-
-APB / AXI-Lite wrapper
-
-FPGA synthesis & timing constraints
-
-Assertion-based verification (SVA)
+**Author:** Devansh Swaroop
+**Domain:** RTL Design · I²C Protocol · Digital Design · VLSI
+ 
