@@ -1,261 +1,256 @@
-📘 UART Controller – Verilog HDL Implementation
+# 📘 UART Controller – Verilog HDL Implementation
 
-1️⃣ Project Title
+A **fully functional UART Transmitter & Receiver** implemented in **Verilog HDL**, supporting **8-bit data, no parity, 1 stop bit (8N1)** at **115200 baud** using a **50 MHz system clock**. The design includes a baud rate generator, reset-safe TX/RX FSMs, **16× oversampling receiver**, and a **self-checking loopback testbench**.
 
-UART Transmitter & Receiver (115200 Baud, 8N1) – Verilog HDL
+---
 
-2️⃣ Short Description (TL;DR)
+## 🔖 Overview (TL;DR)
 
-A fully functional UART controller implemented in Verilog HDL, supporting 8-bit data, no parity, 1 stop bit (8N1) at 115200 baud using a 50 MHz system clock.
-The design includes a baud rate generator, reset-safe transmitter, and a robust receiver with 16× oversampling, along with a self-checking loopback testbench.
+This project implements a **standard-compliant UART controller** suitable for SoC peripherals, FPGA labs, and RTL interviews. The design emphasizes **timing accuracy, robustness, and clean modular RTL**, along with a comprehensive verification environment.
 
-3️⃣ Protocol Overview
+---
 
-UART (Universal Asynchronous Receiver/Transmitter) is an asynchronous serial communication protocol that uses:
+## 🧠 UART Protocol Overview
 
-No shared clock between transmitter and receiver
+UART (Universal Asynchronous Receiver/Transmitter) is an **asynchronous serial communication protocol** characterized by:
 
-Start and stop bits for synchronization
+* No shared clock between transmitter and receiver
+* Start and stop bits for synchronization
+* Fixed baud rate agreed by both ends
 
-Fixed baud rate on both ends
+### UART Configuration Used
 
-UART Configuration Used
-Parameter	Value
-System Clock	50 MHz
-Baud Rate	115200
-Data Bits	8
-Parity	None
-Stop Bits	1
-Frame Format	8N1
-RX Oversampling	16×
-UART Frame Format
+| Parameter       | Value  |
+| --------------- | ------ |
+| System Clock    | 50 MHz |
+| Baud Rate       | 115200 |
+| Data Bits       | 8      |
+| Parity          | None   |
+| Stop Bits       | 1      |
+| Frame Format    | 8N1    |
+| RX Oversampling | 16×    |
+
+### UART Frame Format
+
+```
 Idle (1) → Start (0) → D0 → D1 → D2 → D3 → D4 → D5 → D6 → D7 → Stop (1)
+```
 
-4️⃣ Project Scope
-Included
+---
 
-Baud rate generator (TX and RX)
+## 🎯 Project Scope
 
-UART transmitter (TX)
+### ✔ Included
 
-UART receiver (RX)
+* Baud rate generator (TX and RX)
+* UART transmitter (TX)
+* UART receiver (RX)
+* 16× RX oversampling for noise tolerance
+* Reset-safe FSM design
+* Ready / Busy handshaking
+* Loopback self-checking testbench
 
-16× RX oversampling for noise tolerance
+### ❌ Not Included
 
-Reset-safe FSM design
+* Parity generation or checking
+* Framing error detection
+* FIFO buffering
+* Flow control (RTS/CTS)
+* Runtime baud-rate selection
 
-Ready/Busy handshaking
+---
 
-Loopback testbench with self-checking
+## ✨ Features
 
-Not Included
+* Standard-compliant UART (8N1)
+* Accurate baud generation from 50 MHz clock
+* 16× RX oversampling for reliable reception
+* Reset-safe FSMs for TX and RX
+* Clean TX busy signaling
+* Explicit RX ready-clear handshake
+* Modular, readable RTL design
+* Comprehensive self-checking testbench
 
-Parity generation/checking
+---
 
-Framing error detection
+## 🏗️ Architecture Overview
 
-FIFO buffering
+The UART controller is divided into four major blocks:
 
-Flow control (RTS/CTS)
+1. **Baud Rate Generator**
+2. **UART Transmitter (TX)**
+3. **UART Receiver (RX)**
+4. **Top-Level Integration Module**
 
-Multi-baud runtime selection
+All blocks operate in a **single 50 MHz clock domain** and communicate using **clock-enable pulses** rather than gated clocks.
 
-5️⃣ Features
+---
 
-✔ Standard-compliant UART (8N1)
+## 🧩 Block Descriptions
 
-✔ Accurate baud generation from 50 MHz clock
+### 🔹 Baud Rate Generator
 
-✔ 16× RX oversampling for reliable reception
+* Divides the 50 MHz system clock to generate:
 
-✔ Reset-safe FSMs
+  * TX baud tick (1× baud)
+  * RX oversampling tick (16× baud)
+* Uses counters and clock-enable pulses
+* Parameterized divider calculation
 
-✔ Clean TX busy signaling
+### 🔹 Transmitter (TX)
 
-✔ Explicit RX ready clear handshake
+* FSM-based UART transmitter
+* Latches data on `wr_en`
+* Transmits:
 
-✔ Modular and readable RTL
+  * Start bit
+  * 8 data bits (LSB first)
+  * Stop bit
+* Provides `tx_busy` to prevent overwrite
 
-✔ Comprehensive self-checking testbench
+### 🔹 Receiver (RX)
 
-6️⃣ Architecture Overview
+* FSM-based UART receiver
+* Uses 16× oversampling
+* Samples data at bit center
+* Tolerates minor baud mismatch
+* Asserts `rdy` with valid data
+* Uses explicit `rdy_clr` handshake
 
-The UART design is divided into four main blocks:
+### 🔹 Top-Level UART Module
 
-Baud Rate Generator
+* Instantiates baud generator, TX, and RX
+* Exposes a clean external interface
+* Suitable for SoC or FPGA integration
 
-UART Transmitter
+---
 
-UART Receiver
+## 🔄 Finite State Machines (FSMs)
 
-Top-Level Integration Module
+### Transmitter FSM States
 
-All blocks operate in a single clock domain (50 MHz) and communicate using clock-enable pulses instead of gated clocks.
+| State | Description                  |
+| ----- | ---------------------------- |
+| IDLE  | Line idle, waiting for write |
+| START | Transmit start bit           |
+| DATA  | Transmit 8 data bits         |
+| STOP  | Transmit stop bit            |
 
-7️⃣ Block Descriptions
-🔹 Baud Rate Generator
+### Receiver FSM States
 
-Divides 50 MHz clock to generate:
+| State | Description                          |
+| ----- | ------------------------------------ |
+| START | Detect start bit and align sampling  |
+| DATA  | Sample 8 data bits                   |
+| STOP  | Validate stop bit and complete frame |
 
-TX baud tick (1× baud)
+---
 
-RX oversampling tick (16× baud)
+## 🔌 Interface Signals
 
-Uses counters and clock-enable pulses
+### Top-Level UART Ports
 
-Parameterized for baud calculation
+#### Inputs
 
-🔹 Transmitter (TX)
+| Signal  | Width | Description         |
+| ------- | ----- | ------------------- |
+| clk_50m | 1     | 50 MHz system clock |
+| rst     | 1     | Asynchronous reset  |
+| din     | 8     | Transmit data       |
+| wr_en   | 1     | Transmit request    |
+| rx      | 1     | UART RX input       |
+| rdy_clr | 1     | Clear RX ready flag |
 
-FSM-based UART transmitter
+#### Outputs
 
-Latches data on wr_en
+| Signal  | Width | Description           |
+| ------- | ----- | --------------------- |
+| tx      | 1     | UART TX output        |
+| tx_busy | 1     | Transmitter busy flag |
+| dout    | 8     | Received data         |
+| rdy     | 1     | RX data valid         |
 
-Sends:
+---
 
-Start bit
+## ⚙️ Parameters & Configurability
 
-8 data bits (LSB first)
+### Baud Generator Parameters
 
-Stop bit
+* `RX_ACC_MAX` – Divider for RX oversampling
+* `TX_ACC_MAX` – Divider for TX baud rate
+* Counter widths derived using `$clog2`
 
-Provides tx_busy to prevent overwrite
+⚠️ **Current design uses fixed baud rate (115200) and fixed system clock (50 MHz) at compile time.**
 
-🔹 Receiver (RX)
+---
 
-FSM-based UART receiver
+## 🔁 Transaction / Operation Flow
 
-Uses 16× oversampling
+### Transmit Operation
 
-Samples data at bit center
+1. User asserts `wr_en` with valid `din`
+2. TX latches data and asserts `tx_busy`
+3. Start bit transmitted
+4. 8 data bits transmitted (LSB first)
+5. Stop bit transmitted
+6. TX returns to IDLE
 
-Handles minor baud mismatch
+### Receive Operation
 
-Provides rdy flag with explicit clear (rdy_clr)
+1. RX detects falling edge (start bit)
+2. Oversampling aligns to bit center
+3. 8 data bits sampled
+4. Stop bit validated
+5. `rdy` asserted with valid `dout`
+6. User clears `rdy` using `rdy_clr`
 
-🔹 Top-Level UART Module
+---
 
-Instantiates baud generator, TX, and RX
+## ⏱️ Timing & Clocking Details
 
-Provides a clean external interface
+* Single 50 MHz system clock
+* Baud generator produces clock-enable pulses
+* TX operates on 1× baud enable
+* RX operates on 16× baud enable
+* Sampling occurs at bit center
+* All logic fully synchronous
 
-Suitable for SoC or FPGA integration
+---
 
-8️⃣ Finite State Machine (FSM)
-Transmitter FSM States
-State	Description
-IDLE	Line idle, waiting for write
-START	Transmit start bit
-DATA	Transmit 8 data bits
-STOP	Transmit stop bit
-Receiver FSM States
-State	Description
-START	Detect start bit and align sampling
-DATA	Sample 8 data bits
-STOP	Validate stop bit and complete frame
-9️⃣ Interface Signals
-Top-Level UART Ports
-Inputs
-Signal	Width	Description
-clk_50m	1	50 MHz system clock
-rst	1	Asynchronous reset
-din	8	Transmit data
-wr_en	1	Transmit request
-rx	1	UART RX input
-rdy_clr	1	Clear RX ready flag
-Outputs
-Signal	Width	Description
-tx	1	UART TX output
-tx_busy	1	Transmitter busy flag
-dout	8	Received data
-rdy	1	RX data valid
-🔟 Parameters & Configurability
-Baud Generator Parameters
+## 🧪 Simulation & Verification
 
-RX_ACC_MAX – Divider for RX oversampling
+Verification is performed using a **self-checking loopback testbench**:
 
-TX_ACC_MAX – Divider for TX baud
+* TX output connected to RX input
+* Automatic data comparison
+* Timeout protection
+* Reset behavior validation
+* Multiple test patterns
 
-Counter widths derived using $clog2
+---
 
-⚠️ Current design uses fixed baud rate (115200) and fixed clock (50 MHz) at compile time.
+## 📊 Example Simulation Results
 
-1️⃣1️⃣ Transaction / Operation Flow
-Transmit Operation
+### Console Output Example
 
-User asserts wr_en with valid din
-
-TX latches data and asserts tx_busy
-
-Start bit transmitted
-
-8 data bits transmitted (LSB first)
-
-Stop bit transmitted
-
-TX returns to idle
-
-Receive Operation
-
-RX detects falling edge (start bit)
-
-Oversampling aligns to bit center
-
-8 data bits sampled
-
-Stop bit validated
-
-rdy asserted with valid dout
-
-User clears rdy using rdy_clr
-
-1️⃣2️⃣ Timing & Clocking Details
-
-Single 50 MHz system clock
-
-Baud generator creates clock-enable pulses
-
-TX uses 1× baud enable
-
-RX uses 16× baud enable
-
-Data sampling occurs at bit center
-
-All logic fully synchronous
-
-1️⃣3️⃣ Simulation & Verification
-
-Verification is done using a self-checking testbench featuring:
-
-TX-to-RX loopback
-
-Automatic data comparison
-
-Timeout protection
-
-Reset validation
-
-Multiple test patterns
-
-1️⃣4️⃣ Example Simulation Results
-
-Console output example:
-
+```
 ✅ RX OK: 55
 ✅ RX OK: 00
 ✅ RX OK: FF
 🎉 ALL UART TESTS PASSED 🎉
+```
 
+### Waveform Confirms
 
-Waveforms show:
+* Correct start and stop bit timing
+* Accurate baud spacing
+* Stable RX sampling at bit centers
 
-Correct start/stop bit timing
+---
 
-Proper baud spacing
+## 🚀 Quick Start
 
-Stable sampling at RX bit centers
-
-1️⃣5️⃣ How to Run / Quick Start
+```
 # Compile
 iverilog -o uart_sim uart.v uart_tb.v
 
@@ -264,50 +259,55 @@ vvp uart_sim
 
 # View waveforms
 gtkwave uart_tb.vcd
+```
 
-1️⃣6️⃣ Tools Used
+---
 
-Verilog HDL
+## 🛠️ Tools Used
 
-Icarus Verilog (iverilog)
+* Verilog HDL
+* Icarus Verilog (iverilog)
+* GTKWave
+* ModelSim / Questa / Vivado Simulator (compatible)
 
-GTKWave
+---
 
-Compatible with ModelSim, Questa, Vivado Simulator
+## 📁 Directory Structure
 
-1️⃣7️⃣ Directory Structure
-├── baud_rate_gen.v     # Baud rate generator
-├── transmitter.v       # UART transmitter
-├── receiver.v          # UART receiver
-├── uart.v              # Top-level UART
-├── uart_tb.v           # Self-checking testbench
-├── uart_tb.vcd         # Waveform output
-├── README.md           # Documentation
+```
+├── baud_rate_gen.v   # Baud rate generator
+├── transmitter.v    # UART transmitter
+├── receiver.v       # UART receiver
+├── uart.v            # Top-level UART
+├── uart_tb.v         # Self-checking testbench
+├── uart_tb.vcd       # Waveform output
+├── README.md         # Documentation
+```
 
-1️⃣8️⃣ Limitations
+---
 
-Fixed baud rate and clock frequency
+## ⚠️ Limitations
 
-No parity or framing error detection
+* Fixed baud rate and system clock
+* No parity or framing error detection
+* No RX/TX FIFO buffering
+* No flow control (RTS/CTS)
+* Single UART instance
 
-No RX/TX FIFO buffering
+---
 
-No flow control (RTS/CTS)
+## 🔮 Future Enhancements
 
-Single UART instance only
+* Parity support (even/odd)
+* Framing and overrun error flags
+* Parameterized baud rate and clock
+* RX and TX FIFOs
+* AXI-Lite / APB UART wrapper
+* Interrupt generation
+* Multi-UART support
 
-1️⃣9️⃣ Future Enhancements
+---
 
-Add parity support (even/odd)
-
-Add framing and overrun error flags
-
-Parameterize baud rate and clock
-
-Add RX and TX FIFOs
-
-AXI-Lite / APB UART wrapper
-
-Interrupt generation
-
-Multi-UART support 
+**Author:** Devansh Swaroop
+**Domain:** RTL Design · UART Protocol · Digital Desig
+ 
