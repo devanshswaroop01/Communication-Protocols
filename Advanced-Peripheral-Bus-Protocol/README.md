@@ -1,282 +1,246 @@
-📘 AMBA APB Master–Slave Implementation (Verilog)
+# 📘 AMBA APB Master–Slave System (Verilog HDL)
 
-1️⃣ Project Title
+A **protocol-compliant, deadlock-safe AMBA APB implementation** in Verilog HDL featuring an FSM-based master, multi-slave support, address decoding interconnect, and a protocol-aware verification testbench.
 
-AMBA APB Master–Slave System (Verilog HDL)
-A protocol-compliant, deadlock-safe APB implementation with multi-slave support and verification testbench
+---
 
-2️⃣ Short Description (TL;DR)
+## 🔖 Overview (TL;DR)
 
-This project implements a fully functional AMBA APB (Advanced Peripheral Bus) system in Verilog HDL, including a finite-state-machine based APB master, multiple APB slaves, a central interconnect, and a protocol-aware testbench.
-The design strictly follows APB timing rules and demonstrates correct read/write operations, wait-state handling, and error reporting.
+This project implements a **fully functional AMBA APB (Advanced Peripheral Bus) system** using Verilog HDL. It strictly follows **APB3 timing and handshake rules** and demonstrates:
 
-3️⃣ Protocol Overview
+* Correct read/write transactions
+* Wait-state handling via `PREADY`
+* Error reporting using `PSLVERR`
+* Clean FSM-based protocol sequencing
 
-APB (Advanced Peripheral Bus) is part of the AMBA bus family and is intended for:
+The design is intended for **learning, labs, and RTL/VLSI interviews**, not for high-performance production SoCs.
 
-Low-bandwidth peripherals
+---
 
-Simple control and register access
+## 🧠 What is APB?
 
-Low power and low complexity
+APB (Advanced Peripheral Bus) is part of the **ARM AMBA bus family**, optimized for:
 
-Key APB Characteristics:
+* Low-bandwidth peripherals
+* Register and control access
+* Low power consumption
+* Minimal hardware complexity
 
-Single-cycle address phase (SETUP)
+### Key APB Characteristics
 
-Single or multi-cycle data phase (ENABLE)
+* Single-cycle **SETUP** phase
+* Single or multi-cycle **ENABLE** phase
+* No burst transactions
+* No pipelining
+* Simple handshake using `PREADY` and `PSLVERR`
 
-No burst transactions
+> This project follows **APB3-style behavior**.
 
-No pipelining
+---
 
-Simple handshake using PREADY and PSLVERR
+## 🎯 Project Scope
 
-This project follows APB3-style behavior.
+### ✔ Included
 
-4️⃣ Project Scope
+* Educational, interview-grade APB design
+* Strict protocol correctness
+* Clean and readable RTL
+* Deterministic and deadlock-free behavior
 
-✔ Educational and interview-grade APB implementation
-✔ Demonstrates protocol correctness and clean design
-✔ Suitable for:
+### ❌ Not Included
 
-VLSI / SoC learning
+* High-performance or production-grade fabric
+* Burst or pipelined transfers
+* APB4 advanced features
 
-Lab assignments
+---
 
-RTL design interviews
+## ✨ Features
 
-APB protocol understanding
+* FSM-based APB Master (`IDLE → SETUP → ENABLE`)
+* Protocol-compliant signal timing
+* Read and write transaction support
+* Two APB slaves with address-based selection
+* Deadlock-free `PREADY` aggregation
+* Proper `PSLVERR` handling
+* Back-to-back transfer capability
+* Deterministic reset behavior
+* Clean, protocol-aware testbench
+* Waveform and console-based verification
 
-❌ Not intended as a high-performance production bus fabric
+---
 
-5️⃣ Features
+## 🏗️ Architecture Overview
 
-✔ FSM-based APB master (IDLE–SETUP–ENABLE)
+```
+User / Testbench
+        │
+        ▼
+   APB Master (FSM)
+        │
+        ▼
+  APB Interconnect (Top)
+        │
+   ┌────┴────┐
+   ▼         ▼
+APB Slave 1  APB Slave 2
+```
 
-✔ Protocol-compliant signal timing
+### Component Responsibilities
 
-✔ Support for read and write transactions
+* **APB Master**: Generates all APB protocol signals
+* **Interconnect**: Decodes addresses and routes responses
+* **Slaves**: Memory-mapped peripherals
+* **Testbench**: Drives and verifies transactions
 
-✔ Two APB slaves with address-based selection
+---
 
-✔ Deadlock-free PREADY aggregation
+## 🧩 Block Descriptions
 
-✔ Proper PSLVERR handling
+### 🔹 APB Master
 
-✔ Back-to-back transfer support
+* Implements APB protocol sequencing
+* FSM controls `SETUP` and `ENABLE` phases
+* Latches address and control signals in `SETUP`
+* Handles wait states via `PREADY`
 
-✔ Deterministic reset behavior
+### 🔹 APB Interconnect (Top Module)
 
-✔ Clean, protocol-aware testbench
+* Address-based slave selection
+* Aggregates `PREADY` and `PSLVERR`
+* Multiplexes `PRDATA`
+* Prevents deadlock on invalid address decode
 
-✔ Waveform and console-based verification
+### 🔹 APB Slave
 
-6️⃣ Architecture Overview
+* 256-byte memory-mapped peripheral
+* Responds only during `ENABLE` phase
+* Supports read and write accesses
+* Detects invalid address accesses
 
-The system consists of four main components:
+### 🔹 Testbench
 
-User/Testbench
+* Drives valid and invalid APB transactions
+* Captures data at true transfer completion
+* Displays transaction summaries in console
+* Generates waveforms for visual inspection
 
-      │
-      ▼
- APB Master (FSM-based)
- 
-      │
-      ▼
- APB Interconnect (Top Module)
- 
-      │
- ┌────┴────┐
- ▼         ▼
- 
-APB Slave1 APB Slave2
+---
 
+## 🔄 Finite State Machine (FSM)
 
-The APB Master generates protocol signals
+### FSM States
 
-The Interconnect decodes addresses and aggregates responses
+| State  | Description                      |
+| ------ | -------------------------------- |
+| IDLE   | No active transaction            |
+| SETUP  | Address/control phase (`PSEL=1`) |
+| ENABLE | Data phase (`PENABLE=1`)         |
 
-Slaves implement memory-mapped peripherals
+### FSM Behavior
 
-7️⃣ Block Descriptions
+* `IDLE → SETUP` on transfer request
+* `SETUP → ENABLE` unconditionally
+* `ENABLE → IDLE / SETUP` based on `PREADY` and next request
 
-🔹 APB Master
+---
 
-Implements APB protocol sequencing
+## 🔌 Interface Signals
 
-Uses FSM to control SETUP and ENABLE phases
+### Master Inputs
 
-Latches address/control signals in SETUP
+* `pclk` – APB clock
+* `presetn` – Active-low reset
+* `transfer` – Transfer request
+* `read`, `write` – Operation type
+* `apb_read_paddr`, `apb_write_paddr` – Address inputs
+* `apb_write_data` – Write data
 
-Supports wait states via PREADY
+### APB Bus Signals
 
-🔹 APB Interconnect (Top)
+* `PSELx` – Slave select
+* `PENABLE` – Data phase indicator
+* `PWRITE` – Read/Write control
+* `PADDR` – Address bus
+* `PWDATA` – Write data
+* `PRDATA` – Read data
+* `PREADY` – Transfer complete
+* `PSLVERR` – Error indicator
 
-Performs slave selection based on address
+---
 
-Aggregates PREADY and PSLVERR
+## ⚙️ Parameters & Configuration
 
-Multiplexes read data
+### Current Design Assumptions
 
-Prevents deadlock on invalid decode
+* Address width: **8 bits**
+* Data width: **8 bits**
+* Number of slaves: **2**
 
-🔹 APB Slave
+### Address Map
 
-Implements a 256-byte memory
+| Slave   | Address Range |
+| ------- | ------------- |
+| Slave 1 | `0x00 – 0x7F` |
+| Slave 2 | `0x80 – 0xFF` |
 
-Responds only in ENABLE phase
+> The design can be extended via parameterization.
 
-Performs read/write operations
+---
 
-Detects invalid address accesses
+## 🔁 Transaction Flow
 
-🔹 Testbench
+1. User asserts `transfer` with read/write
+2. Master enters `SETUP` and latches signals
+3. Master transitions to `ENABLE`
+4. Slave processes the request
+5. Slave asserts `PREADY` (and `PSLVERR` if required)
+6. Master completes transfer
+7. Read data captured (for read operations)
 
-Drives valid and invalid transactions
+---
 
-Captures signals at true transfer completion
+## ⏱️ Timing & Clocking
 
-Displays transaction summaries
+* All logic synchronous to `pclk`
+* Reset is asynchronous, active-low
+* APB timing rules strictly followed:
 
-Generates waveforms for analysis
+  * Signals stable from `SETUP` through `ENABLE`
+  * `PREADY` sampled only during `ENABLE`
 
-8️⃣ Finite State Machine (FSM)
-FSM States:
+---
 
-State	Description
+## 🧪 Simulation & Verification
 
-IDLE	No active transfer
+Verification uses a **directed, protocol-aware testbench**:
 
-SETUP	Address and control phase (PSEL=1, PENABLE=0)
+* Timeout-protected waits
+* Snapshot capture at `PENABLE && PREADY`
+* Console logs for transaction summaries
+* Waveform inspection using VCD
 
-ENABLE	Data phase (PENABLE=1, wait for PREADY)
+---
 
-FSM Behavior:
+## 📊 Example Simulation Output
 
-IDLE → SETUP on transfer request
-
-
-SETUP → ENABLE unconditionally
-
-
-ENABLE → IDLE or SETUP based on PREADY and new request
-
-9️⃣ Interface Signals
-
-Master Inputs
-
-pclk – APB clock
-
-presetn – Active-low reset
-
-transfer – Transfer request
-
-read, write – Operation type
-
-apb_read_paddr, apb_write_paddr – Addresses
-
-apb_write_data – Write data
-
-APB Bus Signals
-
-PSELx – Slave select
-
-PENABLE – Data phase indicator
-
-PWRITE – Read/Write control
-
-PADDR – Address bus
-
-PWDATA – Write data
-
-PRDATA – Read data
-
-PREADY – Transfer complete
-
-PSLVERR – Error indicator
-
-🔟 Parameters & Configurability
-
-Current design assumptions:
-
-Address width: 8 bits
-
-Data width: 8 bits
-
-Number of slaves: 2
-
-Address map:
-
-Slave 1: 0x00 – 0x7F
-
-Slave 2: 0x80 – 0xFF
-
-The design can be extended by parameterizing data width, address width, and slave count.
-
-1️⃣1️⃣ Transaction / Operation Flow
-
-User asserts transfer with read or write
-
-Master enters SETUP phase and latches signals
-
-Master enters ENABLE phase
-
-Slave processes request
-
-Slave asserts PREADY (and PSLVERR if needed)
-
-Master completes transfer
-
-Read data captured (for read transactions)
-
-1️⃣2️⃣ Timing & Clocking Details
-
-All logic synchronous to pclk
-
-Reset is asynchronous active-low
-
-APB timing strictly followed:
-
-Signals stable from SETUP through ENABLE
-
-PREADY sampled only in ENABLE
-
-1️⃣3️⃣ Simulation & Verification
-
-Verification is performed using:
-
-Directed testbench
-
-Timeout-protected waits
-
-Snapshot capture at PENABLE && PREADY
-
-Console logs for transaction summaries
-
-Waveform inspection (VCD)
-
-1️⃣4️⃣ Example Simulation Results
-
-Example Console Output:
-
+```
 WRITE to 0x25 → SUCCESS
-
-READ from 0x25 → Data = 0xAB
-
+READ  from 0x25 → Data = 0xAB
 WRITE to 0x80 → PSLVERR asserted
+```
 
+### Waveform Confirms
 
-Waveform Confirms:
+* Correct SETUP/ENABLE sequencing
+* Stable signals during ENABLE
+* Proper error handling without deadlock
 
-Correct SETUP/ENABLE sequencing
+---
 
-Stable signals during ENABLE
+## 🚀 Quick Start
 
-Proper error handling without deadlock
-
-1️⃣5️⃣ How to Run / Quick Start
-
+```
 # Compile
 iverilog -o apb_tb *.v
 
@@ -285,55 +249,54 @@ vvp apb_tb
 
 # View waveform
 gtkwave waveform.vcd
+```
 
-1️⃣6️⃣ Tools Used
+---
 
-Verilog HDL
+## 🛠️ Tools Used
 
-Icarus Verilog (iverilog)
+* Verilog HDL
+* Icarus Verilog (iverilog)
+* GTKWave
+* (Optional) ModelSim / Vivado Simulator / EPWave
 
-GTKWave
+---
 
-(Optional) EPWave / ModelSim / Vivado Simulator
+## 📁 Directory Structure
 
-1️⃣7️⃣ Directory Structure
-
+```
 ├── APB_master.v
-
 ├── APB_slave.v
-
 ├── APB_top.v
-
 ├── testbench.v
-
 ├── waveform.vcd
-
 └── README.md
+```
 
-1️⃣8️⃣ Limitations
+---
 
-Single outstanding transaction
+## ⚠️ Limitations
 
-Fixed address map
+* Single outstanding transaction
+* Fixed address map
+* APB3 only (no APB4 extensions)
+* No burst or pipelined transfers
+* Fixed slave response latency
+* No assertion-based verification
 
-APB3-style only (no APB4 features)
+---
 
-No burst or pipelining
+## 🔮 Future Enhancements
 
-Slaves respond with fixed latency
+* Parameterized number of slaves
+* APB4 support (`PSTRB`, `PPROT`)
+* Configurable address and data widths
+* Assertion-based verification (SVA)
+* Randomized and coverage-driven testing
+* Power-aware enhancements (clock gating)
 
-No assertion-based verification
+---
 
-1️⃣9️⃣ Future Enhancements
-
-Parameterized number of slaves
-
-APB4 feature support (PSTRB, PPROT)
-
-Configurable data/address width
-
-Assertion-based verification (SVA)
-
-Randomized and coverage-driven testing
-
-Power-aware enhancements (clock gating) 
+**Author:** Devansh Swaroop
+**Domain:** RTL Design · AMBA Protocols · VLSI / SoC Design
+ 
