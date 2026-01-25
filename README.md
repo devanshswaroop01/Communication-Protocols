@@ -1,6 +1,4 @@
-# 📡 Communication Protocols 
-
-RTL Implementations (Verilog HDL)
+# 📡 Communication Protocols  RTL Implementations (Verilog HDL)
 
 ## 📌 Overview
 
