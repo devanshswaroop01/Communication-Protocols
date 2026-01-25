@@ -1,4 +1,6 @@
-# 📡 Communication Protocols – RTL Implementations (Verilog HDL)
+# 📡 Communication Protocols 
+
+RTL Implementations (Verilog HDL)
 
 ## 📌 Overview
 
@@ -212,5 +214,7 @@ Follow the **README inside that folder** to compile, simulate, and view waveform
 ## 👤 Author
 
 **Devansh Swaroop**
+
 RTL & VLSI Design Enthusiast
+
 Focused on protocol-accurate hardware design and verification
