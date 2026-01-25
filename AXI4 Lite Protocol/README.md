@@ -36,14 +36,19 @@ AXI4-Lite is a simplified subset of the AMBA AXI protocol intended for **low-ban
 ### Included
 
 ✔ AXI4-Lite Master
+
 ✔ AXI4-Lite Slave (Register File)
+
 ✔ Top-level integration module
+
 ✔ Directed verification testbench
+
 ✔ Waveform + console-based validation
 
 ### Not Included
 
 ❌ AXI interconnect
+
 ❌ Bursts, out-of-order, or pipelining
 
 ---
