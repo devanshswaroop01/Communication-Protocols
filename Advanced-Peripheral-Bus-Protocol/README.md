@@ -1,4 +1,5 @@
 📘 AMBA APB Master–Slave Implementation (Verilog)
+
 1️⃣ Project Title
 
 AMBA APB Master–Slave System (Verilog HDL)
@@ -76,15 +77,19 @@ APB protocol understanding
 The system consists of four main components:
 
 User/Testbench
+
       │
       ▼
  APB Master (FSM-based)
+ 
       │
       ▼
  APB Interconnect (Top Module)
+ 
       │
  ┌────┴────┐
  ▼         ▼
+ 
 APB Slave1 APB Slave2
 
 
@@ -95,6 +100,7 @@ The Interconnect decodes addresses and aggregates responses
 Slaves implement memory-mapped peripherals
 
 7️⃣ Block Descriptions
+
 🔹 APB Master
 
 Implements APB protocol sequencing
@@ -137,19 +143,27 @@ Generates waveforms for analysis
 
 8️⃣ Finite State Machine (FSM)
 FSM States:
+
 State	Description
+
 IDLE	No active transfer
+
 SETUP	Address and control phase (PSEL=1, PENABLE=0)
+
 ENABLE	Data phase (PENABLE=1, wait for PREADY)
+
 FSM Behavior:
 
 IDLE → SETUP on transfer request
 
+
 SETUP → ENABLE unconditionally
+
 
 ENABLE → IDLE or SETUP based on PREADY and new request
 
 9️⃣ Interface Signals
+
 Master Inputs
 
 pclk – APB clock
@@ -243,10 +257,15 @@ Console logs for transaction summaries
 Waveform inspection (VCD)
 
 1️⃣4️⃣ Example Simulation Results
+
 Example Console Output:
+
 WRITE to 0x25 → SUCCESS
+
 READ from 0x25 → Data = 0xAB
+
 WRITE to 0x80 → PSLVERR asserted
+
 
 Waveform Confirms:
 
@@ -257,6 +276,7 @@ Stable signals during ENABLE
 Proper error handling without deadlock
 
 1️⃣5️⃣ How to Run / Quick Start
+
 # Compile
 iverilog -o apb_tb *.v
 
@@ -279,10 +299,15 @@ GTKWave
 1️⃣7️⃣ Directory Structure
 
 ├── APB_master.v
+
 ├── APB_slave.v
+
 ├── APB_top.v
+
 ├── testbench.v
+
 ├── waveform.vcd
+
 └── README.md
 
 1️⃣8️⃣ Limitations
